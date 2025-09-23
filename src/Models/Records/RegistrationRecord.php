@@ -147,14 +147,6 @@ class RegistrationRecord extends Record
     public ?string $operationDate = null;
 
     /**
-     * Tipo de rectificación: S (sustitución) o I (por diferencias)
-     *
-     * @field TipoRectificativa
-     */
-    #[Assert\Choice(choices: ['S', 'I'])]
-    public ?string $rectificationType = null;
-
-    /**
      * Datos de la factura sustituida
      *
      * @field IDFacturaSustituida
