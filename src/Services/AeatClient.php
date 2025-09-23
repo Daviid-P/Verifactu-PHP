@@ -11,7 +11,6 @@ use josemmo\Verifactu\Models\Records\CancellationRecord;
 use josemmo\Verifactu\Models\Records\FiscalIdentifier;
 use josemmo\Verifactu\Models\Records\ForeignFiscalIdentifier;
 use josemmo\Verifactu\Models\Records\RegistrationRecord;
-use UXML\UXML;
 
 /**
  * Class to communicate with the AEAT web service endpoint for VERI*FACTU
