@@ -10,7 +10,8 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
  *
  * @field DetalleDesglose
  */
-class BreakdownDetails extends Model {
+class BreakdownDetails extends Model
+{
     /**
      * Impuesto de aplicación
      *
@@ -62,8 +63,25 @@ class BreakdownDetails extends Model {
     #[Assert\Regex(pattern: '/^-?\d{1,12}\.\d{2}$/')]
     public string $taxAmount;
 
+	/**
+	 * Causa de exención (obligatoria si IVA = 0%)
+	 *
+	 * @field CausaExencion
+	 */
+	#[Assert\Length(min: 2, max: 2)]
+	public ?string $exemptReasonCode = null;
+
+	/**
+	 * Descripción de la exención
+	 *
+	 * @field DescripcionExencion
+	 */
+	#[Assert\Length(max: 500)]
+	public ?string $exemptReason = null;
+
     #[Assert\Callback]
-    final public function validateTaxAmount(ExecutionContextInterface $context): void {
+	final public function validateTaxAmount(ExecutionContextInterface $context): void
+	{
         if (!isset($this->taxRate) || !isset($this->baseAmount) || !isset($this->taxAmount)) {
             return;
         }

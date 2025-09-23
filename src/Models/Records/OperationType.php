@@ -1,7 +1,8 @@
 <?php
 namespace josemmo\Verifactu\Models\Records;
 
-enum OperationType: string {
+enum OperationType: string
+{
     /** Operación sujeta y no exenta - Sin inversión del sujeto pasivo */
     case S1 = 'S1';
 

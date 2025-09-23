@@ -4,7 +4,8 @@ namespace josemmo\Verifactu\Models\Records;
 /**
  * Claves de Régimen Especial o Trascendencia Adicional
  */
-enum RegimeType: string {
+enum RegimeType: string
+{
     /** Operación de régimen general. */
     case C01 = '01';
 

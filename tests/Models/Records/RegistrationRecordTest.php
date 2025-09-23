@@ -1,4 +1,5 @@
 <?php
+
 namespace josemmo\Verifactu\Tests\Models\Records;
 
 use DateTimeImmutable;
@@ -13,11 +14,14 @@ use josemmo\Verifactu\Models\Records\InvoiceType;
 use josemmo\Verifactu\Models\Records\OperationType;
 use josemmo\Verifactu\Models\Records\RegimeType;
 use josemmo\Verifactu\Models\Records\RegistrationRecord;
+use josemmo\Verifactu\Models\Records\RectificationType;
 use josemmo\Verifactu\Models\Records\TaxType;
 use PHPUnit\Framework\TestCase;
 
-final class RegistrationRecordTest extends TestCase {
-    public function testCalculatesHashForFirstRecord(): void {
+final class RegistrationRecordTest extends TestCase
+{
+    public function testCalculatesHashForFirstRecord(): void
+    {
         $record = new RegistrationRecord();
         $record->invoiceId = new InvoiceIdentifier();
         $record->invoiceId->issuerId = 'A00000000';
@@ -43,7 +47,8 @@ final class RegistrationRecordTest extends TestCase {
         $record->validate();
     }
 
-    public function testCalculatesHashForOtherRecords(): void {
+    public function testCalculatesHashForOtherRecords(): void
+    {
         $record = new RegistrationRecord();
         $record->invoiceId = new InvoiceIdentifier();
         $record->invoiceId->issuerId = 'A00000000';
@@ -72,7 +77,9 @@ final class RegistrationRecordTest extends TestCase {
         $record->validate();
     }
 
-    public function testValidatesTotalAmounts(): void {
+    #[DoesNotPerformAssertions]
+    public function testValidatesTotalAmounts(): void
+    {
         $record = new RegistrationRecord();
         $record->invoiceId = new InvoiceIdentifier();
         $record->invoiceId->issuerId = 'A00000000';
@@ -132,7 +139,9 @@ final class RegistrationRecordTest extends TestCase {
         }
     }
 
-    public function testValidatesRecipients(): void {
+    #[DoesNotPerformAssertions]
+    public function testValidatesRecipients(): void
+    {
         $record = new RegistrationRecord();
         $record->invoiceId = new InvoiceIdentifier();
         $record->invoiceId->issuerId = 'A00000000';

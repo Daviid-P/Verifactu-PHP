@@ -49,6 +49,26 @@ class ForeignFiscalIdentifier extends Model {
     #[Assert\Length(max: 20)]
     public string $value;
 
+    /**
+	 * Constructor
+	 *
+	 * @param string $name Nombre o razón social del titular
+	 * @param string $country Código ISO 3166-1 alpha-2 del país
+	 * @param ForeignIdType $type Tipo de identificación fiscal
+	 * @param string $value Número de identificación fiscal
+	 */
+	public function __construct(
+		string $name,
+		string $country,
+		ForeignIdType $type,
+		string $value
+	) {
+		$this->name = $name;
+		$this->country = $country;
+		$this->type = $type;
+		$this->value = $value;
+	}
+
     #[Assert\Callback]
     final public function validateCountry(ExecutionContextInterface $context): void {
         if (isset($this->country) && $this->country === 'ES') {

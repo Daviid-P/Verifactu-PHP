@@ -1,7 +1,8 @@
 <?php
 namespace josemmo\Verifactu\Models\Records;
 
-enum TaxType: string {
+enum TaxType: string
+{
     /** Impuesto sobre el Valor Añadido (IVA) */
     case IVA = '01';
 
