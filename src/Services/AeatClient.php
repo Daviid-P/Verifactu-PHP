@@ -107,9 +107,6 @@ class AeatClient
      * @return UXML                          XML response from web service
      *
      * @throws GuzzleException if request failed
-     *
-     * @deprecated 0.0.3 Use the `send()` method instead.
-     * @see AeatClient::send
      */
     public function send(array $records): UXML
     {
