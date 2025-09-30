@@ -181,7 +181,7 @@ class AeatClient
             ],
             'body' => $xml->asXML(),
         ]);
-        return UXML::fromString($response->getBody()->getContents());
+        return $this->handleResponse($response);
     }
 
     /**
@@ -268,94 +268,6 @@ class AeatClient
      */
     private function addCancellationRecordProperties(UXML $recordElement, CancellationRecord $record): void
     {
-        $idFacturaElement = $recordElement->add('sum1:IDFactura');
-        $idFacturaElement->add('sum1:IDEmisorFacturaAnulada', $record->invoiceId->issuerId);
-        $idFacturaElement->add('sum1:NumSerieFacturaAnulada', $record->invoiceId->invoiceNumber);
-        $idFacturaElement->add('sum1:FechaExpedicionFacturaAnulada', $record->invoiceId->issueDate->format('d-m-Y'));
-    }
-
-    /**
-     * Add registration record properties
-     *
-     * @param UXML               $recordElement Element to fill
-     * @param RegistrationRecord $record        Registration record instance
-     */
-    private function addRegistrationRecordProperties(UXML $recordElement, RegistrationRecord $record): void {
-        $idFacturaElement = $recordElement->add('sum1:IDFactura');
-        $idFacturaElement->add('sum1:IDEmisorFactura', $record->invoiceId->issuerId);
-        $idFacturaElement->add('sum1:NumSerieFactura', $record->invoiceId->invoiceNumber);
-        $idFacturaElement->add('sum1:FechaExpedicionFactura', $record->invoiceId->issueDate->format('d-m-Y'));
-
-        $recordElement->add('sum1:NombreRazonEmisor', $record->issuerName);
-        $recordElement->add('sum1:TipoFactura', $record->invoiceType->value);
-
-        if ($record->correctiveType !== null) {
-            $recordElement->add('sum1:TipoRectificativa', $record->correctiveType->value);
-        }
-        if (count($record->correctedInvoices) > 0) {
-            $facturasRectificadasElement = $recordElement->add('sum1:FacturasRectificadas');
-            foreach ($record->correctedInvoices as $correctedInvoice) {
-                $facturaRectificadaElement = $facturasRectificadasElement->add('sum1:IDFacturaRectificada');
-                $facturaRectificadaElement->add('sum1:IDEmisorFactura', $correctedInvoice->issuerId);
-                $facturaRectificadaElement->add('sum1:NumSerieFactura', $correctedInvoice->invoiceNumber);
-                $facturaRectificadaElement->add('sum1:FechaExpedicionFactura', $correctedInvoice->issueDate->format('d-m-Y'));
-            }
-        }
-        if (count($record->replacedInvoices) > 0) {
-            $facturasSustituidasElement = $recordElement->add('sum1:FacturasSustituidas');
-            foreach ($record->replacedInvoices as $replacedInvoice) {
-                $facturaSustituidaElement = $facturasSustituidasElement->add('sum1:IDFacturaSustituida');
-                $facturaSustituidaElement->add('sum1:IDEmisorFactura', $replacedInvoice->issuerId);
-                $facturaSustituidaElement->add('sum1:NumSerieFactura', $replacedInvoice->invoiceNumber);
-                $facturaSustituidaElement->add('sum1:FechaExpedicionFactura', $replacedInvoice->issueDate->format('d-m-Y'));
-            }
-        }
-        if ($record->correctedBaseAmount !== null && $record->correctedTaxAmount !== null) {
-            $importeRectificacionElement = $recordElement->add('sum1:ImporteRectificacion');
-            $importeRectificacionElement->add('sum1:BaseRectificada', $record->correctedBaseAmount);
-            $importeRectificacionElement->add('sum1:CuotaRectificada', $record->correctedTaxAmount);
-        }
-
-        $recordElement->add('sum1:DescripcionOperacion', $record->description);
-
-        if (count($record->recipients) > 0) {
-            $destinatariosElement = $recordElement->add('sum1:Destinatarios');
-            foreach ($record->recipients as $recipient) {
-                $destinatarioElement = $destinatariosElement->add('sum1:IDDestinatario');
-                $destinatarioElement->add('sum1:NombreRazon', $recipient->name);
-                if ($recipient instanceof FiscalIdentifier) {
-                    $destinatarioElement->add('sum1:NIF', $recipient->nif);
-                } else {
-                    $idOtroElement = $destinatarioElement->add('sum1:IDOtro');
-                    $idOtroElement->add('sum1:CodigoPais', $recipient->country);
-                    $idOtroElement->add('sum1:IDType', $recipient->type->value);
-                    $idOtroElement->add('sum1:ID', $recipient->value);
-                }
-            }
-        }
-
-        $desgloseElement = $recordElement->add('sum1:Desglose');
-        foreach ($record->breakdown as $breakdownDetails) {
-            $detalleDesgloseElement = $desgloseElement->add('sum1:DetalleDesglose');
-            $detalleDesgloseElement->add('sum1:Impuesto', $breakdownDetails->taxType->value);
-            $detalleDesgloseElement->add('sum1:ClaveRegimen', $breakdownDetails->regimeType->value);
-            $detalleDesgloseElement->add('sum1:CalificacionOperacion', $breakdownDetails->operationType->value);
-            $detalleDesgloseElement->add('sum1:TipoImpositivo', $breakdownDetails->taxRate);
-            $detalleDesgloseElement->add('sum1:BaseImponibleOimporteNoSujeto', $breakdownDetails->baseAmount);
-            $detalleDesgloseElement->add('sum1:CuotaRepercutida', $breakdownDetails->taxAmount);
-        }
-
-        $recordElement->add('sum1:CuotaTotal', $record->totalTaxAmount);
-        $recordElement->add('sum1:ImporteTotal', $record->totalAmount);
-    }
-
-    /**
-     * Add cancellation record properties
-     *
-     * @param UXML               $recordElement Element to fill
-     * @param CancellationRecord $record        Cancellation record instance
-     */
-    private function addCancellationRecordProperties(UXML $recordElement, CancellationRecord $record): void {
         $idFacturaElement = $recordElement->add('sum1:IDFactura');
         $idFacturaElement->add('sum1:IDEmisorFacturaAnulada', $record->invoiceId->issuerId);
         $idFacturaElement->add('sum1:NumSerieFacturaAnulada', $record->invoiceId->invoiceNumber);
