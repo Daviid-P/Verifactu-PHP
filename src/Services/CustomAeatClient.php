@@ -3,20 +3,26 @@
 namespace josemmo\Verifactu\Services;
 
 use josemmo\Verifactu\Models\ComputerSystem;
-use josemmo\Verifactu\Models\FiscalIdentifier;
+use josemmo\Verifactu\Models\Records\FiscalIdentifier;
 
 class CustomAeatClient extends AeatClient
 {
     /**
-     * Obtiene los objetos ComputerSystem y FiscalIdentifier usados por el cliente
+     * Obtiene los objetos ComputerSystem usados por el cliente
      *
-     * @return array{system: ComputerSystem, taxpayer: FiscalIdentifier}
+     * @return ComputerSystem
      */
-    public function getSystemAndTaxpayer(): array
+    public function getSystem(): ComputerSystem
     {
-        return [
-            'system' => $this->system,
-            'taxpayer' => $this->taxpayer,
-        ];
+        return $this->system;
+    }
+    /**
+     * Obtiene los objetos  FiscalIdentifier usados por el cliente
+     *
+     * @return FiscalIdentifier
+     */
+    public function getTaxpayer(): FiscalIdentifier
+    {
+        return $this->taxpayer;
     }
 }
