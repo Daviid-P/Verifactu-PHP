@@ -1,4 +1,5 @@
 <?php
+
 namespace josemmo\Verifactu\Services;
 
 use GuzzleHttp\Client;
@@ -17,10 +18,12 @@ use UXML\UXML;
 /**
  * Class to communicate with the AEAT web service endpoint for VERI*FACTU
  */
-class AeatClient {
+class AeatClient
+{
     public const NS_SOAPENV = 'http://schemas.xmlsoap.org/soap/envelope/';
     public const NS_SUM = 'https://www2.agenciatributaria.gob.es/static_files/common/internet/dep/aplicaciones/es/aeat/tike/cont/ws/SuministroLR.xsd';
     public const NS_SUM1 = 'https://www2.agenciatributaria.gob.es/static_files/common/internet/dep/aplicaciones/es/aeat/tike/cont/ws/SuministroInformacion.xsd';
+    const NS_CON = 'https://www2.agenciatributaria.gob.es/static_files/common/internet/dep/aplicaciones/es/aeat/tike/cont/ws/ConsultaLR.xsd';
 
     private readonly ComputerSystem $system;
     private readonly FiscalIdentifier $taxpayer;
@@ -75,7 +78,8 @@ class AeatClient {
      *
      * @return $this This instance
      */
-    public function setRepresentative(?FiscalIdentifier $representative): static {
+    public function setRepresentative(?FiscalIdentifier $representative): static
+    {
         $this->representative = $representative;
         return $this;
     }
@@ -87,7 +91,8 @@ class AeatClient {
      *
      * @return $this This instance
      */
-    public function setProduction(bool $production): static {
+    public function setProduction(bool $production): static
+    {
         $this->isProduction = $production;
         return $this;
     }
@@ -102,7 +107,9 @@ class AeatClient {
      * @throws AeatException   if AEAT server returned an error
      * @throws GuzzleException if request sending failed
      */
-    public function send(array $records): PromiseInterface { /** @phpstan-ignore generics.notGeneric */
+    public function send(array $records): PromiseInterface
+    {
+        /** @phpstan-ignore generics.notGeneric */
         // Build initial request
         $xml = UXML::newInstance('soapenv:Envelope', null, [
             'xmlns:soapenv' => self::NS_SOAPENV,
@@ -146,9 +153,9 @@ class AeatClient {
 
         // Parse and return response
         return $responsePromise
-            ->then(fn (ResponseInterface $response): string => $response->getBody()->getContents())
-            ->then(fn (string $response): UXML => UXML::fromString($response))
-            ->then(fn (UXML $xml): AeatResponse => AeatResponse::from($xml));
+            ->then(fn(ResponseInterface $response): string => $response->getBody()->getContents())
+            ->then(fn(string $response): UXML => UXML::fromString($response))
+            ->then(fn(UXML $xml): AeatResponse => AeatResponse::from($xml));
     }
 
     /**
@@ -156,7 +163,101 @@ class AeatClient {
      *
      * @return string Base URI
      */
-    private function getBaseUri(): string {
+    private function getBaseUri(): string
+    {
         return $this->isProduction ? 'https://www1.agenciatributaria.gob.es' : 'https://prewww1.aeat.es';
+    }
+
+    /**
+     * Consult registration records
+     *
+     * @param array $request Array with 'Cabecera', 'FiltroConsulta', 'DatosAdicionalesRespuesta'
+     * @return UXML XML response from AEAT web service
+     * @throws GuzzleException if request fails
+     */
+    public function consultaFactuSistemaFacturacion(array $request): UXML
+    {
+        // Build request XML
+        $xml = UXML::newInstance('soapenv:Envelope', null, [
+            'xmlns:soapenv' => self::NS_SOAPENV,
+            'xmlns:con'     => self::NS_CON,
+            'xmlns:sum1'     => self::NS_SUM1,
+        ]);
+        $xml->add('soapenv:Header');
+        $body = $xml->add('soapenv:Body');
+
+        // Root element
+        $root = $body->add('con:ConsultaFactuSistemaFacturacion');
+
+        // Cabecera
+        $cabecera = $root->add('con:Cabecera');
+        $cabecera->add('sum1:IDVersion', $request['Cabecera']['IDVersion'] ?? '1.0');
+
+        if (!empty($request['Cabecera']['ObligadoEmision'])) {
+            $obligado = $cabecera->add('sum1:ObligadoEmision');
+            $obligado->add('sum1:NombreRazon', $request['Cabecera']['ObligadoEmision']['NombreRazon'] ?? '');
+            $obligado->add('sum1:NIF', $request['Cabecera']['ObligadoEmision']['NIF'] ?? '');
+        }
+
+        // FiltroConsulta
+        $filtro = $root->add('con:FiltroConsulta');
+
+        if (!empty($request['FiltroConsulta']['PeriodoImputacion'])) {
+            $periodo = $filtro->add('con:PeriodoImputacion');
+            $periodo->add('sum1:Ejercicio', $request['FiltroConsulta']['PeriodoImputacion']['Ejercicio']);
+            $periodo->add('sum1:Periodo', $request['FiltroConsulta']['PeriodoImputacion']['Periodo']);
+        }
+
+        // $sistemaInformaticoElement = $filtro->add('con:SistemaInformatico');
+        // $sistemaInformaticoElement->add('con:NombreRazon', $this->system->vendorName);
+        // $sistemaInformaticoElement->add('con:NIF', $this->system->vendorNif);
+        // $sistemaInformaticoElement->add('con:NombreSistemaInformatico', $this->system->name);
+        // $sistemaInformaticoElement->add('con:IdSistemaInformatico', $this->system->id);
+        // $sistemaInformaticoElement->add('con:Version', $this->system->version);
+        // $sistemaInformaticoElement->add('con:NumeroInstalacion', $this->system->installationNumber);
+        // $sistemaInformaticoElement->add('con:TipoUsoPosibleSoloVerifactu', $this->system->onlySupportsVerifactu ? 'S' : 'N');
+        // $sistemaInformaticoElement->add('con:TipoUsoPosibleMultiOT', $this->system->supportsMultipleTaxpayers ? 'S' : 'N');
+        // $sistemaInformaticoElement->add('con:IndicadorMultiplesOT', $this->system->hasMultipleTaxpayers ? 'S' : 'N');
+
+
+        // Optional: ClavePaginacion
+        if (!empty($request['FiltroConsulta']['ClavePaginacion'])) {
+            $clave = $filtro->add('con:ClavePaginacion');
+            foreach ($request['FiltroConsulta']['ClavePaginacion'] as $key => $value) {
+                $clave->add("con:$key", $value);
+            }
+        }
+
+        // Optional: DatosAdicionalesRespuesta
+        if (!empty($request['DatosAdicionalesRespuesta'])) {
+            $datos = $root->add('con:DatosAdicionalesRespuesta');
+            foreach ($request['DatosAdicionalesRespuesta'] as $key => $value) {
+                $datos->add("con:$key", $value);
+            }
+        }
+
+        // Send request
+        $options = [
+            'base_uri' => $this->getBaseUri(),
+            'headers' => [
+                'Content-Type' => 'text/xml',
+                'User-Agent' => "Mozilla/5.0 (compatible; {$this->system->name}/{$this->system->version})",
+            ],
+            'body' => $xml->asXML(),
+        ];
+        if ($this->certificatePath !== null) {
+            $options['cert'] = ($this->certificatePassword === null) ?
+                $this->certificatePath :
+                [$this->certificatePath, $this->certificatePassword];
+        }
+
+        $responsePromise = $this->client->postAsync('/wlpl/TIKE-CONT/ws/SistemaFacturacion/VerifactuSOAP', $options);
+
+        // Parse and return response
+        return $responsePromise
+            ->then(fn(ResponseInterface $response): string => $response->getBody()->getContents())
+            ->then(fn(string $response): UXML => UXML::fromString($response))
+            ->then(fn(UXML $xml): AeatResponse => AeatResponse::from($xml));
+
     }
 }

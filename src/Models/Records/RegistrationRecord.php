@@ -1,4 +1,5 @@
 <?php
+
 namespace josemmo\Verifactu\Models\Records;
 
 use DateTimeImmutable;
@@ -11,7 +12,8 @@ use UXML\UXML;
  *
  * @field RegistroAlta
  */
-class RegistrationRecord extends Record {
+class RegistrationRecord extends Record
+{
     /**
      * Indicador de subsanación de un registro de facturación de alta previamente generado
      *
@@ -138,8 +140,59 @@ class RegistrationRecord extends Record {
 
     /**
      * @inheritDoc
+     *
+     * @field Destinatario
      */
-    public function calculateHash(): string {
+    #[Assert\Valid]
+    public null|FiscalIdentifier|ForeignFiscalIdentifier $recipient = null;
+
+    /**
+     * Base imponible de la factura original rectificada
+     *
+     * @field BaseRectificada
+     */
+    #[Assert\Regex(pattern: '/^-?\d{1,12}\.\d{2}$/')]
+    public ?string $rectifiedBaseAmount = null;
+
+    /**
+     * Cuota de IVA de la factura original rectificada
+     *
+     * @field CuotaRectificada
+     */
+    #[Assert\Regex(pattern: '/^-?\d{1,12}\.\d{2}$/')]
+    public ?string $rectifiedTaxAmount = null;
+
+    #[Assert\Date]
+    public ?string $operationDate = null;
+
+    /**
+     * Datos de la factura sustituida
+     *
+     * @field IDFacturaSustituida
+     */
+    #[Assert\Valid]
+    public ?InvoiceIdentifier $invoiceIdRectified = null;
+
+
+    /**
+     * Tipo de operación del envío a la AEAT (RegistroAlta / RegistroAnulacion)
+     */
+    #[Assert\NotBlank]
+    public RegistrationType $registrationRequestType = RegistrationType::REGISTRO_ALTA;
+
+    /**
+     * Especifica si el registro es una subsanacion
+     *
+     * @field Subsanacion
+     */
+    #[Assert\Type('boolean')]
+    public bool $isSubsanacion;
+
+    /**
+     * @inheritDoc
+     */
+    public function calculateHash(): string
+    {
         // NOTE: Values should NOT be escaped as that what the AEAT says ¯\_(ツ)_/¯
         $payload  = 'IDEmisorFactura=' . $this->invoiceId->issuerId;
         $payload .= '&NumSerieFactura=' . $this->invoiceId->invoiceNumber;
@@ -152,8 +205,21 @@ class RegistrationRecord extends Record {
         return strtoupper(hash('sha256', $payload));
     }
 
+    public function calculateHashAnulacion(): string
+    {
+        // NOTE: Values should NOT be escaped as that what the AEAT says ¯\_(ツ)_/¯
+        // NOTE: La AEAT indica que NO se escapen los valores
+        $payload  = 'IDEmisorFacturaAnulada=' . $this->invoiceId->issuerId;
+        $payload .= '&NumSerieFacturaAnulada=' . $this->invoiceId->invoiceNumber;
+        $payload .= '&FechaExpedicionFacturaAnulada=' . $this->invoiceId->issueDate->format('d-m-Y');
+        $payload .= '&Huella=' . ($this->previousHash ?? '');
+        $payload .= '&FechaHoraHusoGenRegistro=' . $this->hashedAt->format('c');
+        return strtoupper(hash('sha256', $payload));
+    }
+
     #[Assert\Callback]
-    final public function validateTotals(ExecutionContextInterface $context): void {
+    final public function validateTotals(ExecutionContextInterface $context): void
+    {
         if (!isset($this->breakdown) || !isset($this->totalTaxAmount) || !isset($this->totalAmount)) {
             return;
         }
@@ -193,7 +259,8 @@ class RegistrationRecord extends Record {
     }
 
     #[Assert\Callback]
-    final public function validateRecipients(ExecutionContextInterface $context): void {
+    final public function validateRecipients(ExecutionContextInterface $context): void
+    {
         if (!isset($this->invoiceType)) {
             return;
         }
@@ -213,7 +280,8 @@ class RegistrationRecord extends Record {
     }
 
     #[Assert\Callback]
-    final public function validateCorrectiveDetails(ExecutionContextInterface $context): void {
+    final public function validateCorrectiveDetails(ExecutionContextInterface $context): void
+    {
         if (!isset($this->invoiceType)) {
             return;
         }
@@ -271,7 +339,8 @@ class RegistrationRecord extends Record {
     }
 
     #[Assert\Callback]
-    final public function validateReplacedInvoices(ExecutionContextInterface $context): void {
+    final public function validateReplacedInvoices(ExecutionContextInterface $context): void
+    {
         if (!isset($this->invoiceType)) {
             return;
         }
@@ -286,14 +355,16 @@ class RegistrationRecord extends Record {
     /**
      * @inheritDoc
      */
-    protected function getRecordElementName(): string {
+    protected function getRecordElementName(): string
+    {
         return 'RegistroAlta';
     }
 
     /**
      * @inheritDoc
      */
-    protected function exportCustomProperties(UXML $recordElement): void {
+    protected function exportCustomProperties(UXML $recordElement): void
+    {
         $idFacturaElement = $recordElement->add('sum1:IDFactura');
         $idFacturaElement->add('sum1:IDEmisorFactura', $this->invoiceId->issuerId);
         $idFacturaElement->add('sum1:NumSerieFactura', $this->invoiceId->invoiceNumber);
