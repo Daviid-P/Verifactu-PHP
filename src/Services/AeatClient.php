@@ -172,8 +172,10 @@ class AeatClient
      * Consult registration records
      *
      * @param array $request Array with 'Cabecera', 'FiltroConsulta', 'DatosAdicionalesRespuesta'
-     * @return UXML XML response from AEAT web service
-     * @throws GuzzleException if request fails
+     * @return PromiseInterface<AeatResponse> Response from service
+     *
+     * @throws AeatException   if AEAT server returned an error
+     * @throws GuzzleException if request sending failed
      */
     public function consultaFactuSistemaFacturacion(array $request): UXML
     {
@@ -258,6 +260,5 @@ class AeatClient
             ->then(fn(ResponseInterface $response): string => $response->getBody()->getContents())
             ->then(fn(string $response): UXML => UXML::fromString($response))
             ->then(fn(UXML $xml): AeatResponse => AeatResponse::from($xml));
-
     }
 }
