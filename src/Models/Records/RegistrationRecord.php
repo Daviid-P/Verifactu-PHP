@@ -46,6 +46,7 @@ class RegistrationRecord extends Record
      *
      * @field FechaOperacion
      */
+    #[Assert\Date]
     public ?DateTimeImmutable $operationDate = null;
 
     /**
@@ -161,9 +162,6 @@ class RegistrationRecord extends Record
      */
     #[Assert\Regex(pattern: '/^-?\d{1,12}\.\d{2}$/')]
     public ?string $rectifiedTaxAmount = null;
-
-    #[Assert\Date]
-    public ?string $operationDate = null;
 
     /**
      * Datos de la factura sustituida
