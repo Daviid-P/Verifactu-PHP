@@ -34,6 +34,8 @@ class AeatResponse extends Model {
         $nsTik = self::NS_TIK;
         $instance = new self();
 
+        $instance->xml = $xml->asXML();
+
         // Handle server errors
         $faultElement = $xml->get("{{$nsEnv}}Body/{{$nsEnv}}Fault/faultstring");
         if ($faultElement !== null) {
