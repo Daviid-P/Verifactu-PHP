@@ -2,6 +2,17 @@
 
 namespace josemmo\Verifactu\Services;
 
+use GuzzleHttp\Client;
+use GuzzleHttp\Exception\GuzzleException;
+use GuzzleHttp\Promise\PromiseInterface;
+use josemmo\Verifactu\Exceptions\AeatException;
+use josemmo\Verifactu\Models\ComputerSystem;
+use josemmo\Verifactu\Models\Records\CancellationRecord;
+use josemmo\Verifactu\Models\Records\FiscalIdentifier;
+use josemmo\Verifactu\Models\Records\RegistrationRecord;
+use josemmo\Verifactu\Models\Responses\AeatResponse;
+use Psr\Http\Message\ResponseInterface;
+use SensitiveParameter;
 use UXML\UXML;
 
 final class CustomAeatClient extends AeatClient
