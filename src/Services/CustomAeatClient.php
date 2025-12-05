@@ -34,6 +34,18 @@ final class CustomAeatClient extends AeatClient
     }
 
     /**
+     * Obtiene los objetos FiscalIdentifier usados por el cliente
+     *
+     * @return FiscalIdentifier
+     */
+    public function getRepresentative(): FiscalIdentifier
+    {
+        $reflector = new ReflectionProperty(AeatClient::class, 'representative');
+        $reflector->setAccessible(true);
+        return $reflector->getValue($this);
+    }
+
+    /**
      * Envía respuesta a un requerimiento con registros de facturación.
      * @param string $idRequerimiento ID del requerimiento (de consulta).
      * @param (RegistrationRecord|CancellationRecord)[] $records Invoicing records
@@ -59,12 +71,12 @@ final class CustomAeatClient extends AeatClient
         // Add header
         $cabeceraElement = $baseElement->add('sum:Cabecera');
         $obligadoEmisionElement = $cabeceraElement->add('sum1:ObligadoEmision');
-        $obligadoEmisionElement->add('sum1:NombreRazon', $this->taxpayer->name);
-        $obligadoEmisionElement->add('sum1:NIF', $this->taxpayer->nif);
-        if ($this->representative !== null) {
+        $obligadoEmisionElement->add('sum1:NombreRazon', $this->getTaxpayer()->name);
+        $obligadoEmisionElement->add('sum1:NIF', $this->getTaxpayer()->nif);
+        if ($this->getRepresentative() !== null) {
             $representanteElement = $cabeceraElement->add('sum1:Representante');
-            $representanteElement->add('sum1:NombreRazon', $this->representative->name);
-            $representanteElement->add('sum1:NIF', $this->representative->nif);
+            $representanteElement->add('sum1:NombreRazon', $this->getRepresentative()->name);
+            $representanteElement->add('sum1:NIF', $this->getRepresentative()->nif);
         }
 
         $remisionElement = $cabeceraElement->add('sum1:RemisionRequerimiento');
@@ -73,7 +85,7 @@ final class CustomAeatClient extends AeatClient
 
         // Add registration records
         foreach ($records as $record) {
-            $record->export($baseElement->add('sum:RegistroFactura'), $this->system);
+            $record->export($baseElement->add('sum:RegistroFactura'), $this->getSystem());
         }
 
         // Send request
@@ -81,7 +93,7 @@ final class CustomAeatClient extends AeatClient
             'base_uri' => $this->getBaseUri(),
             'headers' => [
                 'Content-Type' => 'text/xml',
-                'User-Agent' => "Mozilla/5.0 (compatible; {$this->system->name}/{$this->system->version})",
+                'User-Agent' => "Mozilla/5.0 (compatible; {$this->getSystem()->name}/{$this->getSystem()->version})",
             ],
             'body' => $xml->asXML(),
         ];
