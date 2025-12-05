@@ -5,7 +5,7 @@ namespace josemmo\Verifactu\Services;
 use josemmo\Verifactu\Models\ComputerSystem;
 use josemmo\Verifactu\Models\Records\FiscalIdentifier;
 use ReflectionProperty;
-
+use UXML\UXML;
 
 final class CustomAeatClient extends AeatClient
 {
