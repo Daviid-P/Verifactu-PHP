@@ -28,7 +28,7 @@ final class CustomAeatClient extends AeatClient
      * @throws AeatException   if AEAT server returned an error
      * @throws GuzzleException if request sending failed
      */
-    public function sendRequerimiento(string $idRequerimiento, $records, $finRequerimiento): string
+    public function sendRequerimiento(string $idRequerimiento, $records, $finRequerimiento): PromiseInterface
     {
 
         /** @phpstan-ignore generics.notGeneric */
