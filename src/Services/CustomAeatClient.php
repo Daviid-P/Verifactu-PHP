@@ -18,6 +18,21 @@ use UXML\UXML;
 final class CustomAeatClient extends AeatClient
 {
 
+    public function getTaxpayer(): FiscalIdentifier
+    {
+        return $this->taxpayer;
+    }
+
+    public function getSystem(): ComputerSystem
+    {
+        return $this->system;
+    }
+
+    public function getRepresentative(): FiscalIdentifier
+    {
+        return $this->representative;
+    }
+
     /**
      * Envía respuesta a un requerimiento con registros de facturación.
      * @param string $idRequerimiento ID del requerimiento (de consulta).
